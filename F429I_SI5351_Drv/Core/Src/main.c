@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "si5351.h"
 
 /* USER CODE END Includes */
 
@@ -88,12 +89,20 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  const int32_t correction = 978;
+  si5351_Init(correction);
+  si5351_SetupCLK0(10000000, SI5351_DRIVE_STRENGTH_2MA);
+  si5351_SetupCLK2(20000000, SI5351_DRIVE_STRENGTH_2MA);
+  si5351_EnableOutputs((1<<0) | (1<<2));
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
