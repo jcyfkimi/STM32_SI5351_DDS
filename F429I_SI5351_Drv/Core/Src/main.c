@@ -25,6 +25,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "si5351.h"
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -45,6 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+extern UART_HandleTypeDef huart1;
 
 /* USER CODE END PV */
 
@@ -56,6 +60,35 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void UART_TransmitString(const char* str)
+{
+    HAL_UART_Transmit(&huart1, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+}
+
+void I2C_Scan()
+{
+	UART_TransmitString("Scanning I2C bus...\r\n");
+    HAL_StatusTypeDef res;
+    for(uint16_t i = 0; i < 128; i++)
+    {
+        res = HAL_I2C_IsDeviceReady(&hi2c1, i << 1, 1, 10);
+        if(res == HAL_OK)
+        {
+            char msg[64];
+            snprintf(msg, sizeof(msg), "0x%02X", i);
+			UART_TransmitString(msg);
+        }
+        else
+        {
+			UART_TransmitString(".");
+        }
+    }
+
+	UART_TransmitString("\r\n");
+}
+
+
 
 /* USER CODE END 0 */
 
@@ -91,11 +124,16 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  UART_TransmitString("Calling I2C_Scan()...\r\n");
+  I2C_Scan();
+
+  UART_TransmitString("Initializing Si5351...\r\n");
   const int32_t correction = 978;
   si5351_Init(correction);
-  si5351_SetupCLK0(10000000, SI5351_DRIVE_STRENGTH_2MA);
-  si5351_SetupCLK2(20000000, SI5351_DRIVE_STRENGTH_2MA);
+  si5351_SetupCLK0(SI5351_CLK_10MHZ, SI5351_DRIVE_STRENGTH_2MA);
+  si5351_SetupCLK2(2 * SI5351_CLK_10MHZ, SI5351_DRIVE_STRENGTH_2MA);
   si5351_EnableOutputs((1<<0) | (1<<2));
+  UART_TransmitString("Ready!\r\n");
 
   /* USER CODE END 2 */
 
