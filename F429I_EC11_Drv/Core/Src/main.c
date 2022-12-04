@@ -24,7 +24,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,7 +57,10 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void UART_TransmitString(const char* str)
+{
+    HAL_UART_Transmit(&huart1, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+}
 /* USER CODE END 0 */
 
 /**
@@ -66,6 +71,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
+  char msg[50] = {'\0'};
+  uint32_t encVal = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -90,6 +97,9 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -99,6 +109,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	encVal = TIM2->CNT;
+	sprintf(msg, "Encoder Switch Released, Encoder Ticks = %lu\n\r", encVal);
+	UART_TransmitString(msg);
+	HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
